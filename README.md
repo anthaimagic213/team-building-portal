@@ -78,18 +78,117 @@ development/testing; không sử dụng các mật khẩu này trong production.
 
 ### Seed dữ liệu kiểm thử
 
-Chạy từ terminal trong thư mục `backend`:
+Full seed phải chạy theo đúng thứ tự:
+
+1. `seed_dev.py --full`: tạo Admin, Event, Team và CBNV.
+2. `seed_resources.py`: tạo chuyến bay và xe mẫu cho các Event.
+
+Cả hai script đều idempotent, có thể chạy lại mà không tạo bản ghi trùng.
+Không chạy hai lệnh seed cùng lúc vì SQLite chỉ nên có một tiến trình ghi tại
+một thời điểm.
+
+#### Cách 1: Seed khi chạy local
+
+Mở terminal tại thư mục project và cài dependency cho backend:
 
 ```bash
-# Tạo admin, event, team và CBNV mẫu
-python seed_dev.py --full
+cd backend
+python -m venv .venv
 
-# Tạo thêm chuyến bay và xe mẫu cho các event
+# Linux/macOS/WSL
+source .venv/bin/activate
+
+# Windows PowerShell
+# .venv\Scripts\Activate.ps1
+
+pip install -r requirements.txt
+```
+
+Đảm bảo file `.env` ở thư mục gốc project có cấu hình database. Ví dụ:
+
+```env
+DATABASE_URL=sqlite:///./data/teambuilding.db
+```
+
+Tạo bảng và seed dữ liệu:
+
+```bash
+# Đang đứng trong thư mục backend
+python seed_dev.py --full
 python seed_resources.py
 ```
 
-Nếu chạy bằng WSL/Linux, có thể dùng `python3` thay cho `python`. Các script
-seed có tính idempotent, có thể chạy lại mà không tạo bản ghi trùng.
+Nếu muốn chạy backend local sau khi seed:
+
+```bash
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Trên Linux/WSL có thể dùng `python3` thay cho `python`.
+
+#### Cách 2: Seed trong Docker
+
+Từ thư mục gốc project, tạo `.env` và build container để các script seed được
+copy vào image:
+
+```bash
+cp .env.example .env
+docker compose up --build -d
+```
+
+Kiểm tra container backend đang chạy:
+
+```bash
+docker compose ps
+```
+
+Chạy lần lượt hai script trong container backend:
+
+```bash
+docker compose exec backend python seed_dev.py --full
+docker compose exec backend python seed_resources.py
+```
+
+Hoặc dùng tên container hiện tại:
+
+```bash
+docker exec teambuilding_backend python seed_dev.py --full
+docker exec teambuilding_backend python seed_resources.py
+```
+
+Nếu đã có image/container cũ trước khi thêm seed script, bắt buộc build lại:
+
+```bash
+docker compose down
+docker compose up --build -d
+```
+
+Kiểm tra nhanh sau khi seed:
+
+```bash
+docker compose logs backend
+```
+
+Ứng dụng có thể mở tại `http://localhost`, API docs tại
+`http://localhost:8000/api/docs`.
+
+#### Dữ liệu được tạo bởi full seed
+
+| Script | Dữ liệu |
+|---|---|
+| `seed_dev.py --full` | 1 Admin, 4 Event, 32 Team, 320 CBNV |
+| `seed_resources.py` | 16 chuyến bay, 32 xe thuộc 4 Route |
+
+Thông tin đăng nhập sau khi seed:
+
+```text
+Admin: admin@company.com / Admin@123456
+CBNV:  e01t0101@company.com / Test@123456
+```
+
+Nếu database đã có dữ liệu cũ, seed sẽ giữ nguyên dữ liệu đó và chỉ bổ sung
+các bản ghi mẫu còn thiếu. Không commit `.env` hoặc file database SQLite lên
+Git; chia sẻ source code và các file seed để người khác tự tái tạo dữ liệu.
 
 Hãy đổi mật khẩu và `SECRET_KEY` trước khi dùng production.
 
