@@ -1,0 +1,2 @@
+import type { MyJourneyResponse } from '@/types/journey';
+export default function JourneyHeader({ journey }: { journey: MyJourneyResponse }) { return <section className="rounded-2xl bg-gradient-to-r from-blue-700 to-cyan-600 p-6 text-white"><p className="text-sm text-blue-100">My Team Building Journey</p><h1 className="mt-1 text-2xl font-bold">{journey.event_name}</h1><p className="mt-2">{journey.event_location} · {journey.event_status}</p></section>; }

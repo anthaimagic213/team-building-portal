@@ -1,0 +1,12 @@
+import { useEffect, useState } from 'react';
+import { eventApi } from '@/api';
+import type { EventResponse } from '@/types/event';
+import { useAdminStats } from '@/hooks/useAdminStats';
+
+export default function AdminDashboardPage() {
+  const [events, setEvents] = useState<EventResponse[]>([]); const [eventId, setEventId] = useState('');
+  const { data, isLoading, isError, refetch } = useAdminStats(eventId || undefined);
+  useEffect(() => { void eventApi.listEvents().then(setEvents); }, []);
+  const stats: Array<[string, string | number | undefined]> = [['Tổng nhân sự', data?.total_employees], ['Đã đăng ký', data?.total_registered], ['Đang tham gia', data?.total_participating], ['Tỷ lệ đăng ký', data?.registration_rate === undefined ? undefined : `${data.registration_rate}%`], ['Tổng chuyến bay', data?.total_flights], ['Slot bay đã dùng', data?.allocated_flight_slots], ['Ghế Gala đã xác nhận', data?.confirmed_gala_seats], ['Phòng đã phân bổ', data?.total_hotel_rooms_assigned]];
+  return <div className="page-container"><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm text-blue-600">Admin dashboard</p><h1 className="text-2xl font-bold">Tổng quan theo Event</h1></div><button className="btn-secondary" onClick={() => void refetch()}>Làm mới</button></div><section className="card mt-6 p-4"><label className="form-label">Event</label><select className="input" value={eventId} onChange={(e) => setEventId(e.target.value)}><option value="">Chọn Event</option>{events.map((event) => <option key={event.id} value={event.id}>{event.event_name}</option>)}</select></section>{isLoading && <div className="card mt-6 p-8">Đang tải thống kê...</div>}{isError && <div className="card mt-6 p-8 text-red-600">Không thể tải thống kê.</div>}{eventId && !isLoading && !isError && <><div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{stats.map(([label, value]) => <div className="card p-5" key={label}><p className="text-sm text-slate-500">{label}</p><p className="mt-2 text-3xl font-bold">{value ?? '—'}</p></div>)}</div>{data?.allocation_warnings?.map((warning) => <section className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-5 text-amber-900" key={warning}><h2 className="font-semibold">Cần xử lý phân bổ</h2><p className="mt-2 text-sm">{warning}</p><p className="mt-2 break-all text-xs">User IDs: {data.unallocated_flight_user_ids?.join(', ') || 'Không có dữ liệu'}</p></section>)}</>}{!eventId && <div className="card mt-6 p-8 text-slate-500">Hãy chọn Event để xem dữ liệu.</div>}</div>;
+}

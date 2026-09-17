@@ -1,0 +1,22 @@
+import { FormEvent, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useRegistration } from '@/hooks/useRegistration';
+import type { DesiredShift, RegistrationCreateRequest } from '@/types/registration';
+import { getApiErrorMessage } from '@/api/httpClient';
+
+const initial: RegistrationCreateRequest = { event_id: '', is_participating: true, desired_shift: null, needs_vehicle_route_1: false, needs_vehicle_route_2: false, needs_vehicle_route_3: false, needs_vehicle_route_4: false, pickup_location_route_1: null, pickup_location_route_4: null, comments: null, agreed_to_terms: false };
+
+export default function RegistrationPage() {
+  const [params] = useSearchParams();
+  const eventId = params.get('event_id') || undefined;
+  const teamId = params.get('team_id');
+  const registrationQuery = useRegistration(eventId);
+  const [form, setForm] = useState<RegistrationCreateRequest>({ ...initial, event_id: eventId || '', team_id: teamId });
+  const [message, setMessage] = useState('');
+  const registration = registrationQuery.registration;
+  const current = registration ? { ...form, ...registration, event_id: eventId || registration.event_id, team_id: teamId || registration.team_id, agreed_to_terms: true } : form;
+  const set = <K extends keyof RegistrationCreateRequest>(key: K, value: RegistrationCreateRequest[K]) => setForm((old) => ({ ...old, [key]: value }));
+  async function submit(event: FormEvent) { event.preventDefault(); setMessage(''); if (!eventId && !registration?.event_id) { setMessage('Không xác định được Event. Vui lòng quay lại trang Journey và chọn Event.'); return; } try { if (registration) await registrationQuery.updateRegistration(current); else await registrationQuery.submitRegistration({ ...form, event_id: eventId || form.event_id }); setMessage('Lưu đăng ký thành công.'); } catch (error) { setMessage(getApiErrorMessage(error)); } }
+  if (registrationQuery.isLoading) return <div className="page-container"><div className="card p-8">Đang tải biểu mẫu...</div></div>;
+  return <div className="page-container"><section className="card mx-auto max-w-3xl p-6 sm:p-8"><h1 className="text-2xl font-bold">Đăng ký Team Building</h1><p className="mt-2 text-sm text-slate-500">Team của bạn được quản lý bởi tài khoản nhân viên.</p>{message && <p className="mt-4 rounded-lg bg-blue-50 p-3 text-sm text-blue-700">{message}</p>}<form onSubmit={submit} className="mt-6 space-y-6"><fieldset><legend className="form-label">Bạn có tham gia không?</legend><div className="flex gap-4"><label><input type="radio" checked={current.is_participating} onChange={() => set('is_participating', true)} /> Có</label><label><input type="radio" checked={!current.is_participating} onChange={() => set('is_participating', false)} /> Không</label></div></fieldset><fieldset disabled={!current.is_participating}><legend className="form-label">Ca bay mong muốn</legend><div className="flex gap-5"><label><input type="radio" name="shift" checked={current.desired_shift === 'SHIFT_1'} onChange={() => set('desired_shift', 'SHIFT_1' as DesiredShift)} /> Ca 1</label><label><input type="radio" name="shift" checked={current.desired_shift === 'SHIFT_2'} onChange={() => set('desired_shift', 'SHIFT_2' as DesiredShift)} /> Ca 2</label></div></fieldset><fieldset disabled={!current.is_participating}><legend className="form-label">Nhu cầu xe</legend><div className="grid gap-3 sm:grid-cols-2">{[1, 2, 3, 4].map((route) => { const key = `needs_vehicle_route_${route}` as keyof RegistrationCreateRequest; return <label className="rounded-lg border border-slate-200 p-3" key={route}><input type="checkbox" checked={Boolean(current[key])} onChange={(e) => set(key, e.target.checked)} /> Route {route}</label>; })}</div></fieldset><textarea className="input min-h-28" placeholder="Mong muốn/đề xuất" value={current.comments || ''} onChange={(e) => set('comments', e.target.value)} />{!registration && <label className="flex gap-3 text-sm"><input type="checkbox" required checked={form.agreed_to_terms} onChange={(e) => set('agreed_to_terms', e.target.checked)} /> Tôi đồng ý điều khoản chương trình.</label>}<button className="btn-primary" disabled={registrationQuery.isSubmitting || registrationQuery.isUpdating}>{registrationQuery.isSubmitting || registrationQuery.isUpdating ? 'Đang lưu...' : 'Lưu đăng ký'}</button></form></section></div>;
+}

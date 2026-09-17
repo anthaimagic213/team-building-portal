@@ -1,0 +1,2 @@
+import { InputHTMLAttributes } from 'react';
+export default function Checkbox({ label, error, ...props }: InputHTMLAttributes<HTMLInputElement> & { label?: string; error?: string }) { return <label className="flex items-start gap-3 text-sm text-slate-700"><input type="checkbox" className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" {...props} />{label && <span>{label}</span>}{error && <span className="form-error">{error}</span>}</label>; }

@@ -1,0 +1,2 @@
+import Checkbox from '../ui/Checkbox';
+export default function TermsAgreement({ checked, onChange, error }: { checked: boolean; onChange: (value: boolean) => void; error?: string }) { return <Checkbox required checked={checked} onChange={(event) => onChange(event.target.checked)} error={error} label="Tôi đã đọc và đồng ý với điều khoản, quy định và chính sách hủy của chương trình." />; }

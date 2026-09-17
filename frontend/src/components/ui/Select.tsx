@@ -1,0 +1,3 @@
+import { SelectHTMLAttributes } from 'react';
+export interface SelectOption { value: string; label: string; disabled?: boolean; }
+export default function Select({ label, error, options, className = '', ...props }: SelectHTMLAttributes<HTMLSelectElement> & { label?: string; error?: string; options?: SelectOption[] }) { return <label className="block">{label && <span className="form-label">{label}</span>}<select className={`input ${error ? 'input-error' : ''} ${className}`} {...props}>{options?.map((option) => <option key={option.value} value={option.value} disabled={option.disabled}>{option.label}</option>)}</select>{error && <span className="form-error">{error}</span>}</label>; }

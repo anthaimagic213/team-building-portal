@@ -1,0 +1,2 @@
+import Input from '../ui/Input'; import Button from '../ui/Button';
+export default function FilterBar({ search, onSearch, onReset }: { search: string; onSearch: (value: string) => void; onReset?: () => void }) { return <div className="flex flex-col gap-3 sm:flex-row sm:items-end"><div className="w-full sm:max-w-sm"><Input label="Tìm kiếm" placeholder="Nhập từ khóa..." value={search} onChange={(event) => onSearch(event.target.value)} /></div>{onReset && <Button variant="secondary" onClick={onReset}>Xóa lọc</Button>}</div>; }

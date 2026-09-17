@@ -1,0 +1,1 @@
+export default function GalaStage({ position = 'NORTH' }: { position?: string }) { return <div className="rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 text-center text-sm font-semibold text-slate-500">Sân khấu · {position}</div>; }

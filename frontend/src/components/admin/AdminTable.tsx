@@ -1,0 +1,1 @@
+import type { ReactNode } from 'react'; export default function AdminTable({ children }: { children: ReactNode }) { return <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white"><table className="min-w-full divide-y divide-slate-200 text-left text-sm">{children}</table></div>; }

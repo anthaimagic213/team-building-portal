@@ -1,0 +1,4 @@
+import { TextareaHTMLAttributes, forwardRef } from 'react';
+export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> { label?: string; error?: string; }
+const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({ label, error, className = '', ...props }, ref) => <label className="block">{label && <span className="form-label">{label}</span>}<textarea ref={ref} className={`input min-h-28 ${error ? 'input-error' : ''} ${className}`} aria-invalid={Boolean(error)} {...props} />{error && <span className="form-error">{error}</span>}</label>);
+Textarea.displayName = 'Textarea'; export default Textarea;

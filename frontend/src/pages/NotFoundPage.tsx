@@ -1,0 +1,2 @@
+import { Link } from 'react-router-dom';
+export default function NotFoundPage() { return <main className="flex min-h-screen items-center justify-center px-4"><section className="text-center"><p className="text-6xl font-bold text-blue-600">404</p><h1 className="mt-3 text-2xl font-bold">Không tìm thấy trang</h1><Link className="mt-6 inline-block text-blue-600 hover:underline" to="/journey">Về trang hành trình</Link></section></main>; }

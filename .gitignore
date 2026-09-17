@@ -1,0 +1,55 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+backend/.env
+frontend/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.venv/
+venv/
+backend/venv/
+.pytest_cache/
+.mypy_cache/
+
+# Node / Vite
+node_modules/
+frontend/dist/
+dist/
+*.tsbuildinfo
+npm-debug.log*
+
+# Local databases and runtime data — never commit database files
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+**/*.db
+**/*.sqlite
+**/*.sqlite3
+backend/team_building.db
+backend/data/
+backend/data/*
+!backend/data/.gitkeep
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Logs and generated files
+*.log
+coverage/
+htmlcov/
+uploads/

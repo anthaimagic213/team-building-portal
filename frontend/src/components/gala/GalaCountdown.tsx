@@ -1,0 +1,1 @@
+export default function GalaCountdown({ seconds }: { seconds: number }) { const safe = Math.max(0, seconds); return <div className="rounded-lg bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700">Thời gian giữ ghế: {Math.floor(safe / 60).toString().padStart(2, '0')}:{(safe % 60).toString().padStart(2, '0')}</div>; }

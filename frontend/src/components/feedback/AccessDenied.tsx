@@ -1,0 +1,1 @@
+export default function AccessDenied() { return <div className="page-container"><div className="card p-8 text-center"><h1 className="text-xl font-bold text-slate-900">Không có quyền truy cập</h1><p className="mt-2 text-sm text-slate-600">Tài khoản của bạn chưa được cấp quyền cho chức năng này.</p></div></div>; }

@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: teambuilding_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/data:/app/data
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - teambuilding_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api/v1
+        VITE_APP_NAME: Team Building Portal
+        VITE_APP_ENV: production
+        VITE_ENABLE_QUERY_DEVTOOLS: "false"
+        VITE_GALA_POLLING_INTERVAL: "3000"
+        VITE_API_TIMEOUT: "30000"
+    container_name: teambuilding_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - teambuilding_network
+
+
+networks:
+  teambuilding_network:
+    driver: bridge
+
+volumes:
+  sqlite_data:

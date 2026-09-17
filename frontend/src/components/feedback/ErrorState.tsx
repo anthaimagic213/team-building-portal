@@ -1,0 +1,2 @@
+import Button from '../ui/Button';
+export default function ErrorState({ message = 'Không thể tải dữ liệu.', onRetry }: { message?: string; onRetry?: () => void }) { return <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center" role="alert"><p className="text-sm text-red-700">{message}</p>{onRetry && <Button variant="secondary" className="mt-4" onClick={onRetry}>Thử lại</Button>}</div>; }

@@ -1,0 +1,2 @@
+import type { JourneyGalaInfo } from '@/types/journey';
+export default function GalaCard({ gala }: { gala: JourneyGalaInfo }) { return <article className="card p-5"><h3 className="font-semibold">Gala Dinner</h3><p className="mt-3 text-sm text-slate-600">Bàn: <strong>{gala.table_code || '—'}</strong> · Ghế: <strong>{gala.seat_code}</strong></p><span className="status-success mt-3">{gala.status}</span></article>; }

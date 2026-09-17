@@ -1,0 +1,2 @@
+import type { JourneyHotelInfo } from '@/types/journey';
+export default function HotelCard({ hotel }: { hotel: JourneyHotelInfo }) { return <article className="card p-5"><h3 className="font-semibold">{hotel.hotel_name}</h3><p className="mt-2 text-sm text-slate-600">Phòng <strong>{hotel.room_code}</strong>{hotel.room_type ? ` · ${hotel.room_type}` : ''}</p>{hotel.address && <p className="mt-2 text-sm text-slate-500">{hotel.address}</p>}{hotel.roommates.length > 0 && <p className="mt-3 text-sm text-slate-600">Ở cùng: {hotel.roommates.join(', ')}</p>}</article>; }

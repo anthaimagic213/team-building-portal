@@ -1,0 +1,2 @@
+import type { EventScheduleItem } from '@/types/journey';
+export default function ScheduleList({ items }: { items: EventScheduleItem[] }) { return <div className="space-y-4">{items.map((item) => <div className="border-l-2 border-blue-500 pl-4" key={`${item.time}-${item.title}`}><p className="font-semibold">{item.title}</p><p className="text-sm text-slate-500">{new Date(item.time).toLocaleString('vi-VN')}{item.location ? ` · ${item.location}` : ''}</p>{item.description && <p className="mt-1 text-sm text-slate-600">{item.description}</p>}</div>)}</div>; }

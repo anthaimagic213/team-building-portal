@@ -1,0 +1,2 @@
+import { NavLink } from 'react-router-dom';
+export default function BottomNavigation({ items }: { items: Array<{ to: string; label: string }> }) { return <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-3 border-t border-slate-200 bg-white md:hidden">{items.slice(0, 3).map((item) => <NavLink key={item.to} to={item.to} className={({ isActive }) => `flex min-h-14 items-center justify-center px-2 text-center text-xs ${isActive ? 'font-semibold text-blue-600' : 'text-slate-500'}`}>{item.label}</NavLink>)}</nav>; }

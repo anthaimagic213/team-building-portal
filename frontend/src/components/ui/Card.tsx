@@ -1,0 +1,2 @@
+import { HTMLAttributes } from 'react';
+export default function Card({ className = '', ...props }: HTMLAttributes<HTMLElement>) { return <section className={`rounded-xl border border-slate-200 bg-white shadow-card ${className}`} {...props} />; }

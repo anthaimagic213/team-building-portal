@@ -1,0 +1,15 @@
+import { FormEvent, useEffect, useState } from 'react';
+import { adminApi, eventApi } from '@/api';
+import type { EventResponse } from '@/types/event';
+import type { Team } from '@/types/user';
+import Button from '@/components/ui/Button';
+import Modal from '@/components/ui/Modal';
+
+export default function TeamsPage() {
+  const [events, setEvents] = useState<EventResponse[]>([]); const [teams, setTeams] = useState<Team[]>([]); const [eventId, setEventId] = useState(''); const [open, setOpen] = useState(false); const [name, setName] = useState(''); const [message, setMessage] = useState('');
+  const load = async (id = eventId) => { if (id) setTeams(await adminApi.listTeams({ event_id: id })); else setTeams(await adminApi.listTeams()); };
+  useEffect(() => { void eventApi.listEvents().then((data) => { setEvents(data); if (data[0]) { setEventId(data[0].id); void load(data[0].id); } }); }, []);
+  async function submit(e: FormEvent) { e.preventDefault(); try { await adminApi.createTeam({ event_id: eventId, team_name: name }); setName(''); setOpen(false); await load(); } catch { setMessage('Không thể tạo Team.'); } }
+  async function remove(team: Team) { if (!window.confirm(`Xóa Team ${team.team_name}?`)) return; try { await adminApi.deleteTeam(team.id); await load(); } catch { setMessage('Không thể xóa Team còn thành viên.'); } }
+  return <div className="page-container"><div className="flex flex-wrap justify-between gap-4"><div><h1 className="text-2xl font-bold">Quản lý Team</h1><p className="mt-1 text-sm text-slate-500">Tạo Team theo từng Event và theo dõi số thành viên.</p></div><Button disabled={!eventId} onClick={() => setOpen(true)}>+ Tạo Team</Button></div><div className="card mt-6 p-4"><label className="form-label">Event</label><select className="input" value={eventId} onChange={(e) => { setEventId(e.target.value); void load(e.target.value); }}><option value="">Chọn Event</option>{events.map((event) => <option key={event.id} value={event.id}>{event.event_name}</option>)}</select></div>{message && <p className="mt-4 text-sm text-red-600">{message}</p>}<div className="mt-6 overflow-x-auto rounded-xl border border-slate-200 bg-white"><table className="min-w-full text-left text-sm"><thead className="bg-slate-50"><tr><th className="px-4 py-3">Tên Team</th><th className="px-4 py-3">Số thành viên</th><th className="px-4 py-3">Thao tác</th></tr></thead><tbody className="divide-y divide-slate-100">{teams.map((team) => <tr key={team.id}><td className="px-4 py-3 font-medium">{team.team_name}</td><td className="px-4 py-3">{(team as Team & { member_count?: number }).member_count ?? 0}</td><td className="px-4 py-3"><Button variant="danger" className="min-h-9 px-3 py-1" onClick={() => void remove(team)}>Xóa</Button></td></tr>)}</tbody></table></div><Modal open={open} title="Tạo Team mới" onClose={() => setOpen(false)}><form onSubmit={submit} className="space-y-4"><input className="input" required placeholder="Tên Team" value={name} onChange={(e) => setName(e.target.value)} /><Button className="w-full">Tạo Team</Button></form></Modal></div>;
+}

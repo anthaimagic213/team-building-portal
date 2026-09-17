@@ -1,0 +1,1 @@
+export default function TermsPage() { return <main className="page-container"><article className="card mx-auto max-w-3xl p-6 sm:p-8"><h1 className="text-2xl font-bold">Điều khoản chương trình</h1><p className="mt-4 text-slate-600">Vui lòng đọc kỹ quy định Team Building, chính sách hủy đăng ký và nhu cầu xe trước khi xác nhận tham gia.</p></article></main>; }

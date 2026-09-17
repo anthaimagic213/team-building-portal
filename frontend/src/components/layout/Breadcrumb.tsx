@@ -1,0 +1,2 @@
+import { Link } from 'react-router-dom';
+export default function Breadcrumb({ items }: { items: Array<{ label: string; to?: string }> }) { return <nav aria-label="Breadcrumb" className="mb-5 hidden text-sm text-slate-500 md:block"><ol className="flex flex-wrap gap-2">{items.map((item, index) => <li key={`${item.label}-${index}`} className="flex gap-2">{index > 0 && <span>/</span>}{item.to ? <Link className="hover:text-blue-600" to={item.to}>{item.label}</Link> : <span className="text-slate-900">{item.label}</span>}</li>)}</ol></nav>; }

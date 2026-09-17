@@ -1,0 +1,1 @@
+import ProgressBar from '../ui/ProgressBar'; export default function CapacityIndicator({ used, total }: { used: number; total: number }) { const percentage = total > 0 ? used / total * 100 : 0; return <div><ProgressBar value={percentage} label={`${used}/${total} chỗ`} />{used > total && <p className="mt-1 text-xs text-red-600">Đã vượt sức chứa</p>}</div>; }

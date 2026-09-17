@@ -1,0 +1,4 @@
+import { InputHTMLAttributes, forwardRef } from 'react';
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement> { label?: string; error?: string; }
+const Input = forwardRef<HTMLInputElement, InputProps>(({ label, error, className = '', id, ...props }, ref) => <label className="block">{label && <span className="form-label">{label}</span>}<input ref={ref} id={id} className={`input ${error ? 'input-error' : ''} ${className}`} aria-invalid={Boolean(error)} {...props} />{error && <span className="form-error">{error}</span>}</label>);
+Input.displayName = 'Input'; export default Input;
