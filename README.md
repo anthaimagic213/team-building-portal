@@ -35,14 +35,61 @@ docker compose logs -f backend
 docker compose logs -f frontend
 ```
 
-## Tài khoản Admin mặc định
+## Tài khoản kiểm thử
 
-Khi database mới được khởi tạo, backend seed tài khoản mặc định theo cấu hình trong `backend/app/core/config.py`:
+### Tài khoản Admin
+
+Backend tự tạo tài khoản Admin khi khởi tạo database:
 
 ```text
-Email: admin@company.com
+Email:    admin@company.com
 Password: Admin@123456
+Role:     ADMIN, USER
 ```
+
+### Tài khoản CBNV mẫu
+
+Sau khi chạy full seed, tất cả CBNV mẫu đều dùng chung mật khẩu:
+
+```text
+Password: Test@123456
+```
+
+Ví dụ tài khoản CBNV có thể đăng nhập:
+
+```text
+Email:    e01t0101@company.com
+Mã NV:    E01T0101
+Password: Test@123456
+Team:     E01 - Engineering
+```
+
+Một số tài khoản mẫu khác:
+
+```text
+e01t0102@company.com  / Test@123456
+e01t0201@company.com  / Test@123456
+e02t0101@company.com  / Test@123456
+```
+
+Các tài khoản CBNV được tạo theo mã `E<event>T<team><member>`. Full seed tạo
+4 Event, 32 Team và 320 CBNV. Đây chỉ là thông tin đăng nhập cho môi trường
+development/testing; không sử dụng các mật khẩu này trong production.
+
+### Seed dữ liệu kiểm thử
+
+Chạy từ terminal trong thư mục `backend`:
+
+```bash
+# Tạo admin, event, team và CBNV mẫu
+python seed_dev.py --full
+
+# Tạo thêm chuyến bay và xe mẫu cho các event
+python seed_resources.py
+```
+
+Nếu chạy bằng WSL/Linux, có thể dùng `python3` thay cho `python`. Các script
+seed có tính idempotent, có thể chạy lại mà không tạo bản ghi trùng.
 
 Hãy đổi mật khẩu và `SECRET_KEY` trước khi dùng production.
 

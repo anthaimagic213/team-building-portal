@@ -1,10 +1,8 @@
-"""
-Database Seeding Script
+"""Seed dữ liệu mặc định và dữ liệu mẫu cho môi trường kiểm thử.
 
-Tạo dữ liệu mặc định cho hệ thống:
-- Admin user đầu tiên
-- Event mẫu (nếu cần)
-- Teams mẫu (nếu cần)
+Chạy từ thư mục ``backend`` bằng ``python seed_dev.py --full``.
+Seed idempotent: chạy nhiều lần không tạo bản ghi trùng và không xóa dữ liệu.
+Full seed gồm 4 event, 32 team và 320 CBNV mẫu.
 """
 
 from sqlalchemy.orm import Session
@@ -12,6 +10,10 @@ from app.db.models.user import User, Team
 from app.db.models.event import Event
 from app.core.security import get_password_hash
 from datetime import datetime, timedelta
+
+
+DEFAULT_ADMIN_PASSWORD = "Admin@123456"
+SAMPLE_USER_PASSWORD = "Test@123456"
 
 
 def seed_admin_user(db: Session) -> User:
@@ -39,7 +41,7 @@ def seed_admin_user(db: Session) -> User:
         emp_code="ADMIN001",
         full_name="System Administrator",
         email="admin@company.com",
-        hashed_password=get_password_hash("Admin@123456"),
+        hashed_password=get_password_hash(DEFAULT_ADMIN_PASSWORD),
         phone="+84901234567",
         work_location="Head Office",
         team_id=None,
@@ -52,132 +54,58 @@ def seed_admin_user(db: Session) -> User:
     db.commit()
     db.refresh(admin_user)
 
-    print(f"✅ Đã tạo tài khoản Admin: {admin_user.email}")
-    print(f"   📧 Email: admin@company.com")
-    print(f"   🔑 Password: Admin@123456")
-    print(f"   ⚠️  Vui lòng đổi mật khẩu sau khi đăng nhập lần đầu!")
+    print("✅ Đã tạo admin: admin@company.com / Admin@123456")
 
     return admin_user
 
 
-def seed_sample_event(db: Session) -> Event:
-    """
-    Tạo sự kiện mẫu để test.
+EVENTS = [
+    ("Team Building Da Nang 2026", "Da Nang", "REGISTRATION_OPEN"),
+    ("Company Trip Nha Trang 2026", "Nha Trang", "DRAFT"),
+    ("Annual Retreat Phu Quoc 2026", "Phu Quoc", "DRAFT"),
+    ("Team Building Ha Long 2027", "Ha Long", "DRAFT"),
+]
 
-    Chỉ dùng trong môi trường Development.
-    """
-    # Kiểm tra xem đã có event nào chưa
-    existing_event = db.query(Event).first()
-
-    if existing_event:
-        print(f"✅ Event đã tồn tại: {existing_event.name}")
-        return existing_event
-
-    # Tạo event mẫu
-    sample_event = Event(
-        name="Team Building Da Nang 2026",
-        status="DRAFT",
-        start_date=datetime.now() + timedelta(days=30),
-        end_date=datetime.now() + timedelta(days=32),
-        location="Da Nang",
-        registration_deadline=datetime.now() + timedelta(days=15),
-        description="Chuyến đi team building hàng năm tại Đà Nẵng. Khám phá bãi biển đẹp và văn hóa địa phương."
-    )
-
-    db.add(sample_event)
+TEAM_NAMES = ["Engineering", "Product", "Sales", "Marketing", "Finance", "Human Resources", "Customer Success", "Operations"]
+FIRST_NAMES = ["Nguyen Van", "Tran Thi", "Le Hoang", "Pham Minh", "Vo Thanh", "Bui Ngoc", "Dang Quoc", "Doan Thu", "Hoang Anh", "Phan Gia"]
+def seed_sample_data(db: Session) -> tuple[int, int, int]:
+    """Tạo 4 events, 32 teams và 320 CBNV mẫu, không trùng dữ liệu."""
+    now = datetime.now()
+    created = [0, 0, 0]
+    for event_index, (event_name, location, status) in enumerate(EVENTS, 1):
+        event = db.query(Event).filter(Event.name == event_name).first()
+        if event is None:
+            event = Event(name=event_name, status=status,
+                          start_date=now + timedelta(days=30 * event_index),
+                          end_date=now + timedelta(days=30 * event_index + 2),
+                          location=location,
+                          registration_deadline=now + timedelta(days=30 * event_index - 10),
+                          description=f"Dữ liệu mẫu kiểm thử tại {location}.")
+            db.add(event)
+            db.flush()
+            created[0] += 1
+        for team_index, team_name in enumerate(TEAM_NAMES, 1):
+            full_team_name = f"E{event_index:02d} - {team_name}"
+            team = db.query(Team).filter(Team.name == full_team_name).first()
+            if team is None:
+                team = Team(name=full_team_name, event_id=event.id)
+                db.add(team)
+                db.flush()
+                created[1] += 1
+            for member_index in range(1, 11):
+                emp_code = f"E{event_index:02d}T{team_index:02d}{member_index:02d}"
+                if db.query(User).filter(User.emp_code == emp_code).first():
+                    continue
+                db.add(User(emp_code=emp_code,
+                            full_name=f"{FIRST_NAMES[member_index - 1]} {event_index}{team_index:02d}{member_index:02d}",
+                            email=f"{emp_code.lower()}@company.com",
+                            hashed_password=get_password_hash(SAMPLE_USER_PASSWORD),
+                            phone=f"+8490{event_index:02d}{team_index:02d}{member_index:02d}00",
+                            work_location=location, team_id=team.id, roles="USER",
+                            is_representative=member_index == 1, is_priority=member_index <= 2))
+                created[2] += 1
     db.commit()
-    db.refresh(sample_event)
-
-    print(f"✅ Đã tạo Event mẫu: {sample_event.name} (ID: {sample_event.id})")
-
-    return sample_event
-
-
-def seed_sample_teams(db: Session, event_id: str):
-    """
-    Tạo các team mẫu.
-    """
-    team_names = [
-        "AI Development Team",
-        "Backend Team",
-        "Frontend Team",
-        "DevOps Team",
-        "QA Team",
-        "Product Team"
-    ]
-
-    existing_teams = db.query(Team).filter(Team.event_id == event_id).count()
-
-    if existing_teams > 0:
-        print(f"✅ Đã có {existing_teams} teams trong event")
-        return
-
-    for team_name in team_names:
-        team = Team(
-            name=team_name,
-            event_id=event_id
-        )
-        db.add(team)
-
-    db.commit()
-    print(f"✅ Đã tạo {len(team_names)} teams mẫu")
-
-
-def seed_sample_users(db: Session, team_id: str):
-    """
-    Tạo users mẫu cho testing.
-    """
-    sample_users = [
-        {
-            "emp_code": "NV001",
-            "full_name": "Nguyen Van A",
-            "email": "nva@company.com",
-            "password": "123456",
-            "roles": "USER",
-            "is_representative": True  # Đại diện team
-        },
-        {
-            "emp_code": "NV002",
-            "full_name": "Tran Thi B",
-            "email": "ttb@company.com",
-            "password": "123456",
-            "roles": "USER",
-            "is_representative": False
-        },
-        {
-            "emp_code": "NV003",
-            "full_name": "Le Van C",
-            "email": "lvc@company.com",
-            "password": "123456",
-            "roles": "USER",
-            "is_representative": False
-        }
-    ]
-
-    for user_data in sample_users:
-        # Check duplicate
-        existing = db.query(User).filter(User.email == user_data["email"]).first()
-        if existing:
-            continue
-
-        user = User(
-            emp_code=user_data["emp_code"],
-            full_name=user_data["full_name"],
-            email=user_data["email"],
-            hashed_password=get_password_hash(user_data["password"]),
-            phone="+84901234567",
-            work_location="HN Office",
-            team_id=team_id,
-            roles=user_data["roles"],
-            is_representative=user_data["is_representative"],
-            is_priority=False
-        )
-        db.add(user)
-
-    db.commit()
-    print(f"✅ Đã tạo {len(sample_users)} users mẫu")
-
-
+    return tuple(created)
 def run_seed(db: Session, mode: str = "minimal"):
     """
     Chạy seed data.
@@ -200,16 +128,10 @@ def run_seed(db: Session, mode: str = "minimal"):
         print("=" * 60)
         return
 
-    # 2. Tạo event mẫu (development mode)
     if mode == "development":
-        event = seed_sample_event(db)
-        seed_sample_teams(db, event.id)
-
-        # Lấy team đầu tiên để gán users
-        first_team = db.query(Team).filter(Team.event_id == event.id).first()
-        if first_team:
-            seed_sample_users(db, first_team.id)
-
-    print("=" * 60)
+        event_count, team_count, user_count = seed_sample_data(db)
+        print(f"✅ Đã tạo mới: {event_count} events, {team_count} teams, {user_count} CBNV")
+        print(f"🔑 Mật khẩu CBNV mẫu: {SAMPLE_USER_PASSWORD}")
+    else:
+        print("ℹ️ Minimal mode: chỉ seed admin")
     print("✅ Seed hoàn tất!")
-    print("=" * 60)
