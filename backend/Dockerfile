@@ -13,6 +13,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY ./app /app/app
+COPY ./seed_dev.py /app/seed_dev.py
+COPY ./seed_resources.py /app/seed_resources.py
 
 # Create data directory for SQLite
 RUN mkdir -p /app/data
